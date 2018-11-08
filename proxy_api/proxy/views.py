@@ -6,10 +6,10 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils.http import urlencode
 
-from proxy_api.proxy.models import API
+from proxy_api.proxy.models import API, APICallLog
 
 
-def _create_request(api, api_path, request):
+def _extract_headers(request):
     def convert_header_name(s):
         s = s.replace('HTTP_', '', 1)
         s = s.replace('_', '-')
@@ -19,7 +19,6 @@ def _create_request(api, api_path, request):
                    for name, value
                    in request.META.items() if name.startswith('HTTP_'))
     del headers['HOST']
-    del headers['COOKIE']
     del headers['ACCEPT-ENCODING']
 
     if 'CONTENT_TYPE' in request.META:
@@ -31,6 +30,12 @@ def _create_request(api, api_path, request):
     if 'proxy_accepted_content_type' in request.GET:
         headers['ACCEPT'] = request.GET['proxy_accepted_content_type']
         del request.GET['proxy_accepted_content_type']
+
+    return headers
+
+
+def _create_request(api, api_path, request):
+    headers = _extract_headers(request)
 
     url = api.url + "/" + api_path
     if request.GET:
@@ -48,17 +53,23 @@ def forward(request, api_slug, api_path=""):
             "Method {} for API '{}' is not allowed".format(
                 request.method, api_slug), status=405)
 
+    response_kwargs = {}
     try:
         response = urllib.request.urlopen(_create_request(
             api, api_path, request))
-        response_body = response.read()
-        status = response.getcode()
-        charset = response.info().get_content_charset()
-        content_type = response.headers['content-type']
-        return HttpResponse(
-            response_body, status=status, charset=charset,
-            reason=response.reason, content_type=content_type)
+        response_kwargs['content'] = response.read()
+        response_kwargs['status'] = response.getcode()
+        response_kwargs['reason'] = response.reason
+        response_kwargs['charset'] = response.info().get_content_charset()
+        response_kwargs['content_type'] = response.headers['content-type']
     except urllib.error.HTTPError as err:
-        response_body = err.read()
-        status = err.code
-        return HttpResponse(response_body, status=status, reason=err.reason)
+        response_kwargs['content'] = err.read()
+        response_kwargs['status'] = err.code
+        response_kwargs['reason'] = err.reason
+
+    APICallLog.objects.create(api=api, request_body=request.body,
+                              request_headers={name: repr(value)
+                                               for name, value
+                                               in request.META.items()},
+                              **response_kwargs)
+    return HttpResponse(**response_kwargs)

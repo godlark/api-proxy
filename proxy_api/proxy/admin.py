@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import API, Method, ContentType
+from .models import API, Method, ContentType, APICallLog
 
 
 @admin.register(ContentType)
@@ -14,4 +14,9 @@ class MethodAdmin(admin.ModelAdmin):
 
 @admin.register(API)
 class APIAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(APICallLog)
+class APICallLogAdmin(admin.ModelAdmin):
     pass
