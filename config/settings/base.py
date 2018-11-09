@@ -71,6 +71,7 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     'proxy_api.users.apps.UsersAppConfig',
     'proxy_api.proxy.apps.ProxyConfig',
+    'proxy_api.callbacks.apps.CallbacksConfig',
     # Your stuff: custom apps go here
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps

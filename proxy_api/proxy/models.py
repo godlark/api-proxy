@@ -31,7 +31,9 @@ class APICallLog(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     api = models.ForeignKey(API, on_delete=models.CASCADE)
 
-    request_body = models.TextField()
+    request_path = models.CharField(max_length=1000, blank=True)
+    request_body = models.TextField(blank=True)
+    request_body_binary = models.BinaryField(blank=True)
     request_headers = JSONField()
 
     content = models.TextField()

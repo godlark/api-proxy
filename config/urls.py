@@ -20,7 +20,10 @@ urlpatterns = [
         include("proxy_api.users.urls", namespace="users"),
     ),
     path("accounts/", include("allauth.urls")),
-    path("proxy/", include("proxy_api.proxy.urls", namespace="proxy")),
+    path("proxy/", include("proxy_api.proxy.urls",
+                           namespace="proxy")),
+    path("callbacks/", include("proxy_api.callbacks.urls",
+                               namespace="callbacks")),
     # Your stuff: custom urls includes go here
 ] + static(
     settings.MEDIA_URL, document_root=settings.MEDIA_ROOT

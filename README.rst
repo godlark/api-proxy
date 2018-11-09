@@ -11,6 +11,35 @@ The proxy for every API
 :License: MIT
 
 
+Development and Testing
+------------------------
+
+* Install docker and docker-compose
+* Run:
+    $ docker-compose up
+* Run migrations:
+    $ python manage.py migrate
+* Create a superuser account:
+    $ docker-compose run django sh
+    $ python manage.py createsuperuser
+* Setup proxies and callbacks:
+    * go to localhost:8000/admin
+    * login
+    * play
+
+A little more help:
+
+If you setup proxy http://google.pl with `google` slug, in order to receive
+response via proxy, you have to go to http://0.0.0.0:8000/google/~~params~~
+Proxies are available only for logged users.
+
+If you setup callback endpoint http://192.168.1.25:80 with slug `intranet`
+slug, in order to receive callbacks, you have to pass an address
+http://public-address-to-you-proxy:8000/callbacks/forward/intranet/~~params~~
+If you want to replay callbacks requests, check `id` of your favourite
+callback request, than call http://0.0.0.0:8000/callbacks/replay/`id`
+
+
 Settings
 --------
 
